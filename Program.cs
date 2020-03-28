@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Xml.Serialization;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Program
 {
     enum Products { Apple, OPPO, XiaoMi, Vivo, Samsung };
-    class OrderDetails
+    public class OrderDetails
     {
         public string Brand { set; get; }
         public int ProductID { set; get; }
@@ -32,7 +31,8 @@ namespace Program
 
         }
     }
-    class Order
+    [Serializable]
+    public class Order
     {
         public string ClientName { set; get; }
         public int OrderNum { set; get; }
@@ -80,11 +80,11 @@ namespace Program
         }
     }
 
-
-    class OrderService
+    
+    public class OrderService
     {
         public static List<Order> orders = new List<Order>();//储存订单
-
+        public List<Order> testorders = new List<Order>();//测试用的订单
         public void AddOrder(Order order)
         {
             bool tag = true;
@@ -120,8 +120,8 @@ namespace Program
                     where N.OrderNum == n
                     orderby N.TotalAmount
                     select N;
-            List<Order> order1 = a.ToList();
-            order1.ForEach(p => Console.WriteLine(p));
+            testorders = a.ToList();
+            testorders.ForEach(p => Console.WriteLine(p));
         }
         public void QueryByName(string s)
         {
@@ -129,15 +129,29 @@ namespace Program
                     where N.ClientName == s
                     orderby N.TotalAmount
                     select N;
-            List<Order> order1 = a.ToList();
-            order1.ForEach(p => Console.WriteLine(p));
+            testorders = a.ToList();
+            testorders.ForEach(p => Console.WriteLine(p));
         }
         public void OrderSort()
         {
             orders.Sort((p1, p2) => p1.OrderNum - p2.OrderNum);
         }
-
-
+        public void Export()
+        {
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(Order));
+            using (FileStream fs=new FileStream("s.xml", FileMode.Create))
+            {
+                xmlSerializer.Serialize(fs, orders);
+            }
+        }
+        public void inport(string path)
+        {
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(Order));
+            using (FileStream fi = new FileStream(path, FileMode.Open))
+            {
+                Order[] orders = (Order[])xmlSerializer.Deserialize(fi);
+            }
+        }
 
     }
     class Program
